@@ -1,5 +1,5 @@
 import time
-import pymysql
+import MySQLdb
 import datetime
 import configparser
 import multiprocessing
@@ -31,9 +31,12 @@ class SpiderNet(object):
         sql_dict = get_mysql_info()
 
         # These two class are used for connecting mysql server
-        self.db = pymysql.connect(host=sql_dict["host"], user=sql_dict["user"], port=int(sql_dict["port"]),
+        self.db = MySQLdb.connect(host=sql_dict["host"], user=sql_dict["user"], port=int(sql_dict["port"]),
                                   password=sql_dict["password"], db=sql_dict["dbname"])
+        self.db.set_character_set('utf8')
         self.cursor = self.db.cursor()
+        # self.cursor.execute('SET NAMES utf8;')
+        # self.cursor.execute('SET CHARACTER SET utf8;')
 
         # threads and sleep seconds
         self.threads, self.sleep_seconds = get_running_argument()
@@ -102,6 +105,7 @@ class SpiderNet(object):
         while True:
             for i in range(self.fun_num):
                 execute_foo = self.queue.get()
+                print("Calling function: %s" % execute_foo.__name__)
                 info_dict = execute_foo()
                 if self.refresh_confirm(info_dict):
                     self.insert_data(info_dict)
