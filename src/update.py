@@ -7,12 +7,12 @@ import multiprocessing
 
 def get_running_argument():
     """
-    Get threads and sleep seconds fomr "spider.conf"
+    Get threads and sleep seconds from "spider.conf"
     """
     config = configparser.ConfigParser()
     config.read("../spider.conf")
     run_info = dict(config["runinfo"])
-    return run_info["sleep_seconds"], run_info["threads"]
+    return int(run_info["sleep_seconds"]), int(run_info["threads"])
 
 
 def get_mysql_info():
@@ -31,7 +31,7 @@ class SpiderNet(object):
         sql_dict = get_mysql_info()
 
         # These two class are used for connecting mysql server
-        self.db = pymysql.connect(host=sql_dict["host"], user=sql_dict["user"], port=sql_dict["port"],
+        self.db = pymysql.connect(host=sql_dict["host"], user=sql_dict["user"], port=int(sql_dict["port"]),
                                   password=sql_dict["password"], db=sql_dict["dbname"])
         self.cursor = self.db.cursor()
 
@@ -42,6 +42,35 @@ class SpiderNet(object):
         # And count the number of function objects
         self.queue = multiprocessing.Queue()
         self.fun_num = 0
+
+    def insert_data(self, info_dict):
+        """
+        Insert data in dictionary format to database
+        """
+        grab_time = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        sql = """INSERT INTO CUG_SPIDER_INFO(TITLE,
+        UNIT, SITE_URL, LINK, GRAB_TIME, ABSTRACT)
+        VALUES ("%s", "%s", "%s", "%s", "%s", "%s")""" \
+              % (info_dict["title"], info_dict["unit"],
+                 info_dict["site_url"], info_dict["link"],
+                 grab_time, info_dict["abstract"])
+
+        self.cursor.execute(sql)
+        self.db.commit()
+
+    def refresh_confirm(self, info_dict):
+        """
+        return bool type object
+        confirm if the same data had been inserted to database
+        """
+        sql = "SELECT TITLE, LINK FROM CUG_SPIDER_INFO" \
+              " WHERE TITLE='%s' AND LINK='%s';" % (info_dict["title"], info_dict["link"])
+        self.cursor.execute(sql)
+        results = self.cursor.fetchall()
+        if len(results) == 0:
+            return True
+        else:
+            return False
 
     def update(self):
         """
@@ -74,14 +103,7 @@ class SpiderNet(object):
             for i in range(self.fun_num):
                 execute_foo = self.queue.get()
                 info_dict = execute_foo()
-                grab_time = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                sql = """INSERT INTO CUG_SPIDER_INFO(TITLE,
-                UNIT, SITE_URL, LINK, GRAB_TIME, ABSTRACT)
-                VALUES ("%s", "%s", "%s", "%s", "%s", "%s")""" % (info_dict["title"], info_dict["unit"],
-                                                                  info_dict["site_url"], info_dict["link"],
-                                                                  grab_time, info_dict["abstract"])
-
-                self.cursor.execute(sql)
-                self.db.commit()
+                if self.refresh_confirm(info_dict):
+                    self.insert_data(info_dict)
                 self.queue.put(execute_foo)
             time.sleep(self.sleep_seconds)
