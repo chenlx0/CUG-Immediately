@@ -4,7 +4,15 @@ import datetime
 import configparser
 import multiprocessing
 
-SLEEP_TIME = 15
+
+def get_running_argument():
+    """
+    Get threads and sleep seconds fomr "spider.conf"
+    """
+    config = configparser.ConfigParser()
+    config.read("../spider.conf")
+    run_info = dict(config["runinfo"])
+    return run_info["sleep_seconds"], run_info["threads"]
 
 
 def get_mysql_info():
@@ -23,9 +31,12 @@ class SpiderNet(object):
         sql_dict = get_mysql_info()
 
         # These two class are used for connecting mysql server
-        self.db = pymysql.connect(sql_dict["host"], sql_dict["user"],
-                                  sql_dict["password"], sql_dict["dbname"])
+        self.db = pymysql.connect(host=sql_dict["host"], user=sql_dict["user"], port=sql_dict["port"],
+                                  password=sql_dict["password"], db=sql_dict["dbname"])
         self.cursor = self.db.cursor()
+
+        # threads and sleep seconds
+        self.threads, self.sleep_seconds = get_running_argument()
 
         # Store function objects in a queue
         # And count the number of function objects
@@ -42,7 +53,8 @@ class SpiderNet(object):
                     "title": "Hello, CUG!",
                     "link": "https://www.pointstone.org",
                     "abstract": "Forced Morning Exercises is useless.",
-                    "site_url": "https://www.cug.edu.cn"
+                    "site_url": "https://www.cug.edu.cn",
+                    "unit": "NULL"
                 }
         Function decorated return a dictionary contains "title", "link", "abstract" and "site_url".
         Attention: site_url, title and link could not be NULL!
@@ -56,6 +68,7 @@ class SpiderNet(object):
     def run(self):
         """
         Runs spider on the machine!
+        Insert information functions return to database.
         """
         while True:
             for i in range(self.fun_num):
@@ -71,4 +84,4 @@ class SpiderNet(object):
                 self.cursor.execute(sql)
                 self.db.commit()
                 self.queue.put(execute_foo)
-            time.sleep(SLEEP_TIME)
+            time.sleep(self.sleep_seconds)
