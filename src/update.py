@@ -2,7 +2,8 @@ import time
 import MySQLdb
 import datetime
 import configparser
-import multiprocessing
+import threading
+from queue import Queue
 
 
 def get_running_argument():
@@ -39,11 +40,12 @@ class SpiderNet(object):
         # self.cursor.execute('SET CHARACTER SET utf8;')
 
         # threads and sleep seconds
-        self.threads, self.sleep_seconds = get_running_argument()
+        self.sleep_seconds, self.threads = get_running_argument()
 
         # Store function objects in a queue
         # And count the number of function objects
-        self.queue = multiprocessing.Queue()
+        self.fun_queue = Queue()
+        self.obj_queue = Queue()
         self.fun_num = 0
 
     def insert_data(self, info_dict):
@@ -53,10 +55,10 @@ class SpiderNet(object):
         grab_time = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         sql = """INSERT INTO CUG_SPIDER_INFO(TITLE,
         UNIT, SITE_URL, LINK, GRAB_TIME, ABSTRACT)
-        VALUES ("%s", "%s", "%s", "%s", "%s", "%s")""" \
+        VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s")""" \
               % (info_dict["title"], info_dict["unit"],
                  info_dict["site_url"], info_dict["link"],
-                 grab_time, info_dict["abstract"])
+                 grab_time, info_dict["abstract"], info_dict["category"])
 
         self.cursor.execute(sql)
         self.db.commit()
@@ -86,13 +88,14 @@ class SpiderNet(object):
                     "link": "https://www.pointstone.org",
                     "abstract": "Forced Morning Exercises is useless.",
                     "site_url": "https://www.cug.edu.cn",
+                    "category": "information",
                     "unit": "NULL"
                 }
         Function decorated return a dictionary contains "title", "link", "abstract" and "site_url".
         Attention: site_url, title and link could not be NULL!
         """
         def decorator(foo):
-            self.queue.put(foo)
+            self.fun_queue.put(foo), self.obj_queue
             self.fun_num += 1
             return foo
         return decorator
@@ -104,10 +107,10 @@ class SpiderNet(object):
         """
         while True:
             for i in range(self.fun_num):
-                execute_foo = self.queue.get()
+                execute_foo, foo_object = self.fun_queue.get(), self.obj_queue.get()
                 print("Calling function: %s" % execute_foo.__name__)
                 info_dict = execute_foo()
                 if self.refresh_confirm(info_dict):
                     self.insert_data(info_dict)
-                self.queue.put(execute_foo)
+                self.fun_queue.put(execute_foo)
             time.sleep(self.sleep_seconds)
