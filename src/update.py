@@ -109,9 +109,12 @@ class SpiderNet(object):
         while self.queue.empty() is False:
             execute_fun = self.queue.get()
             print("Calling function: %s" % execute_fun.__name__)
-            info_dict = execute_fun()
-            if self.refresh_confirm(info_dict):
-                self.insert_data(info_dict)
+            try:
+                info_dict = execute_fun()
+                if self.refresh_confirm(info_dict):
+                    self.insert_data(info_dict)
+            except:
+                print("Error in function: %s" % execute_fun.__name__)
             self.backup_queue.put(execute_fun)
 
     def run(self):
