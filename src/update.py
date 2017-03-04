@@ -111,6 +111,10 @@ class SpiderNet(object):
         return decorator
 
     def call_functions(self):
+        """
+        Call this member function to call all functions in queue
+        :return:
+        """
         while self.queue.empty() is False:
             silk = self.queue.get()
             execute_fun, execute_obj = silk.function, silk.obj
