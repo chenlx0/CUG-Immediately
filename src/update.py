@@ -1,8 +1,10 @@
-import time
+# -*- coding: utf-8 -*-
+
 import MySQLdb
 import datetime
 import configparser
 import threading
+from time import sleep
 from queue import Queue
 
 
@@ -27,6 +29,16 @@ def get_mysql_info():
     return mysql_info
 
 
+class SpiderSilk(object):
+    """
+    SpiderSilk is a combination of object and its member function.
+    If function is not a member, obj = None.
+    """
+    def __init__(self, function, obj=None):
+        self.function = function
+        self.obj = obj
+
+
 class SpiderNet(object):
     def __init__(self):
         sql_dict = get_mysql_info()
@@ -40,13 +52,11 @@ class SpiderNet(object):
         # self.cursor.execute('SET CHARACTER SET utf8;')
 
         # threads and sleep seconds
-        self.sleep_seconds, self.threads = get_running_argument()
+        self.sleep_seconds, self.threads_num = get_running_argument()
 
         # Store function objects in a queue
         # And count the number of function objects
-        self.fun_queue = Queue()
-        self.obj_queue = Queue()
-        self.fun_num = 0
+        self.queue = Queue()
 
     def insert_data(self, info_dict):
         """
@@ -77,7 +87,7 @@ class SpiderNet(object):
         else:
             return False
 
-    def update(self):
+    def update(self, obj=None):
         """
         A decorator is used to register a function which return website parsed information.
         Usage:
@@ -94,11 +104,24 @@ class SpiderNet(object):
         Function decorated return a dictionary contains "title", "link", "abstract" and "site_url".
         Attention: site_url, title and link could not be NULL!
         """
-        def decorator(foo):
-            self.fun_queue.put(foo), self.obj_queue
-            self.fun_num += 1
-            return foo
+        def decorator(function):
+            new_silk = SpiderSilk(function, obj)
+            self.queue.put(new_silk)
+            return function
         return decorator
+
+    def call_functions(self):
+        while self.queue.empty() is False:
+            silk = self.queue.get()
+            execute_fun, execute_obj = silk.function, silk.obj
+            print("Calling function: %s" % execute_fun.__name__)
+            if execute_obj is None:
+                info_dict = execute_fun()
+            else:
+                info_dict = execute_fun(execute_obj)
+            if self.refresh_confirm(info_dict):
+                self.insert_data(info_dict)
+            self.queue.put(silk)
 
     def run(self):
         """
@@ -106,11 +129,8 @@ class SpiderNet(object):
         Insert information functions return to database.
         """
         while True:
-            for i in range(self.fun_num):
-                execute_foo, foo_object = self.fun_queue.get(), self.obj_queue.get()
-                print("Calling function: %s" % execute_foo.__name__)
-                info_dict = execute_foo()
-                if self.refresh_confirm(info_dict):
-                    self.insert_data(info_dict)
-                self.fun_queue.put(execute_foo)
-            time.sleep(self.sleep_seconds)
+            copy_queue = self.queue
+            self.call_functions()
+            self.queue = copy_queue
+            sleep(self.sleep_seconds)
+
