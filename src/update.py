@@ -7,16 +7,6 @@ import configparser
 from time import sleep
 
 
-def get_running_argument():
-    """
-    Get threads and sleep seconds from "spider.conf"
-    """
-    config = configparser.ConfigParser()
-    config.read("../spider.conf")
-    run_info = dict(config["runinfo"])
-    return int(run_info["sleep_seconds"]), int(run_info["threads"])
-
-
 def get_mysql_info():
     """
     Get MySQL configure information from "spider.conf"
@@ -39,9 +29,6 @@ class SpiderNet(object):
         self.cursor = self.db.cursor()
         # self.cursor.execute('SET NAMES utf8;')
         # self.cursor.execute('SET CHARACTER SET utf8;')
-
-        # threads and sleep seconds
-        self.sleep_seconds = get_running_argument()[0]
 
         # Store function objects in a queue
         # And count the number of function objects
@@ -121,12 +108,12 @@ class SpiderNet(object):
                 print(type(exp), "---> occur in function: %s, more infomation:" %
                       execute_fun.__name__, exp)
 
-    def run(self):
+    def run(self, sleep_seconds):
         """
         Runs spider on the machine!
         Insert information functions return to database.
         """
         while True:
             self.call_functions()
-            sleep(self.sleep_seconds)
+            sleep(sleep_seconds)
 
