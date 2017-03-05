@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import os
 import MySQLdb
 import datetime
 import configparser
-import threading
 from time import sleep
-from queue import Queue
 
 
 def get_running_argument():
@@ -42,12 +41,11 @@ class SpiderNet(object):
         # self.cursor.execute('SET CHARACTER SET utf8;')
 
         # threads and sleep seconds
-        self.sleep_seconds, self.threads_num = get_running_argument()
+        self.sleep_seconds = get_running_argument()[0]
 
         # Store function objects in a queue
         # And count the number of function objects
-        self.queue = Queue()
-        self.backup_queue = Queue()
+        self.function_list = []
 
     def insert_data(self, info_dict):
         """
@@ -96,32 +94,32 @@ class SpiderNet(object):
         Attention: site_url, title and link could not be NULL!
         """
         def decorator(function):
-            self.queue.put(function)
+            self.function_list.append(function)
             return function
         return decorator
 
     def call_functions(self):
-        print("Start spiding!")
         """
-        Call this member function to call all functions in queue
-        :return:
+        Call this member function to call all functions in list
+        :return: None
         """
-        while self.queue.empty() is False:
-            execute_fun = self.queue.get()
-            print("Calling function: %s" % execute_fun.__name__)
+        print("-------Start Crawl on pid: %d-------" % os.getpid())
+        for execute_fun in self.function_list:
+            print("* Calling function: %s" % execute_fun.__name__)
             try:
                 info = execute_fun()
                 if isinstance(info, list):
                     for i in info:
                         if self.refresh_confirm(i):
                             self.insert_data(i)
-                else:
+                elif isinstance(info, dict):
                     if self.refresh_confirm(info):
                         self.insert_data(info)
-            except:
-                print("Error in function: %s" % execute_fun.__name__)
-            finally:
-                self.backup_queue.put(execute_fun)
+                else:
+                    raise TypeError("Function in queue should return a dict or list")
+            except Exception as exp:
+                print(type(exp), "---> occur in function: %s, more infomation:" %
+                      execute_fun.__name__, exp)
 
     def run(self):
         """
@@ -130,7 +128,5 @@ class SpiderNet(object):
         """
         while True:
             self.call_functions()
-            while self.backup_queue.empty() is False:
-                self.queue.put(self.backup_queue.get())
             sleep(self.sleep_seconds)
 
