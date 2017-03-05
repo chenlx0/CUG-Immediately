@@ -30,7 +30,7 @@ class SpiderNet(object):
         # self.cursor.execute('SET NAMES utf8;')
         # self.cursor.execute('SET CHARACTER SET utf8;')
 
-        # Store function objects in a queue
+        # Store function objects in a list
         # And count the number of function objects
         self.function_list = []
 
