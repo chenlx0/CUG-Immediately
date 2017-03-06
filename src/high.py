@@ -50,4 +50,4 @@ def cug_xuegong_infomation():
     return X.get_info()
 
 if __name__ == "__main__":
-    app.run(3)
+    app.run(60)
