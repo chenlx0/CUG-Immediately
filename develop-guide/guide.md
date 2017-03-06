@@ -1,4 +1,4 @@
-# PointStone CUG-Imediately 地大点石即刻项目参与指南
+# PointStone CUG-Immediately 地大点石即刻项目参与指南
 ***
 ### 1. 地大即刻功能简介
 地大即刻的目标是使用Python爬虫实时抓取学校官方主页的最新信息，存储在数据库内并第一时间推送到客户端。
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     app.run(10)
 ```
 
-如果你想在本地运行这段代码，请安装MySQL并导入数据库。你也可以仅仅测试抓取函数是否正确返回了最新信息。
+如果你想在本地运行这段代码，请安装MySQL并导入数据库(数据库文件为sql/CUG_CRAWL.sql)。你也可以仅仅测试抓取函数是否正确返回了最新信息。
 
 需要注意的是，如果这个网页上包含了不止一条最新信息——比如这个网页有很多栏目，每个栏目都在实时更新信息，那么你的抓取函数可以返回一个list，这个list中的元素均为类似于示例代码中返回的dict。
 
@@ -48,9 +48,9 @@ if __name__ == "__main__":
 如果你对Python3下进行爬虫有任何疑问，不妨先参考《Python网络数据采集》这本书，下载链接: [Python网络数据采集](http://storage.hc1024.me/Python_Web_Ebook.zip) 压缩文件已经加密，密码为站长名字全拼。
 
 ### 4.抓取网站列表
-不同的网站之间有不同的优先级。将网站分为三档，抓取脚本分别写成三个不同的文件，high.py, middle.py, low.py 不同优先级的网站爬虫写在不同的文件内。
+不同的网站之间有不同的优先级。根据网站的活跃度及其内容的重要性将网站分为三档，抓取脚本分别写成三个不同的文件，high.py, middle.py, low.py 不同优先级的网站爬虫写在不同的文件内。
 
-下列网站中有些可能需要在校园网中才能打开
+欢迎补充新的网页。下列网站中有些可能需要在校园网中才能打开。
 
 | 网站名称       | URL                            | 优先级    |
 | ------------- |:-------------:| -----:|
@@ -68,8 +68,16 @@ if __name__ == "__main__":
 | 共青团委员会     | http://www.youth.cug.edu.cn/    | middle   |
 | 党委组织部       | http://zzb.cug.edu.cn/          | middle   |
 | 人事处           | http://rsc.cug.edu.cn/          | middle   |
-| 档案馆           | http://dag.cug.edu.cn/          | low      |
+| 财务处           | http://cw.cug.edu.cn/           | middle    |
+| 国际合作处       | http://gjhzc.cug.edu.cn/indexone.shtml  | middle |
+| 采购与招标管理中心| http://cgzb.cug.edu.cn/inet/inet_news/inet_index.html | middle |
 | 各学院官方网站    | http://graduate.cug.edu.cn/ 网页底部的学院链接内| low|
 | 海洋学院          | http://cmst.cug.edu.cn/      | low |
 | 朴石(信工学院门户) | http://pustone.com/          | low |
 | 设备处            | http://sbc.cug.edu.cn/       | low |
+| 基建处            | http://jjc.cug.edu.cn/       | low |
+| 档案馆           | http://dag.cug.edu.cn/          | low      |
+| 网络与教育技术中心 | http://wlzx.cug.edu.cn/        | low      |
+| 纪检监察处        | http://jjw.cug.edu.cn/         | low      |
+| 科学技术发展院    | http://kjc.cug.edu.cn/          | low      |
+| 后勤保障处        | http://hqbzc.cug.edu.cn/       | low       |
