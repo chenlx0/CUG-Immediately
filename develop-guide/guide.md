@@ -7,7 +7,7 @@
 目前已经完成了简单的框架搭建，但由于不同网站之间的html样式有巨大的差距，需要各位撰写Python脚本解析学校各网站html代码。
 
 ### 3.如何开发
-使用requests库请求学校各网站的源代码，借助Python的html解析库(推荐BeautifulSoup)获取最新一条信息，并以字典(dictionary)形式返回数据。在此之前，请导入src/update.py中的SpiderNet对象。使用SpiderNet中的成员函数update装饰抓取函数。示例代码如下:
+使用requests库请求学校各网站的源代码，借助Python的html解析库(推荐BeautifulSoup)获取最新一条信息，并以字典(dictionary)形式返回数据。在此之前，请导入src/update.py中的SpiderNet对象。使用SpiderNet中的成员函数update装饰抓取函数。请注意，字典中各key是固定不可删改的，如果该key下没有内容请用None表示。示例代码如下:
 ```Python
 #/usr/bin/python3
 from update import SpiderNet
@@ -42,8 +42,7 @@ if __name__ == "__main__":
 
 如果你想在本地运行这段代码，请安装MySQL并导入数据库(数据库文件为sql/CUG_CRAWL.sql)。你也可以仅仅测试抓取函数是否正确返回了最新信息。
 
-需要注意的是，如果这个网页上包含了不止一条最新信息——比如这个网页有很多栏目，每个栏目都在实时更新信息，那么你的抓取函数可以返回一个list，这个list中的元素均为类似于示例代码中返回的dict。事实上，为了返回多条信息，我建议你分别将解析不同栏目的代码封装成类的成员函数。update.py中提供了一个基类CrawlBase，你构造的对象可以继承这个基类。构造函数中需要传入一个参数url，调用构造函数后完成了http请求并构造了一个BeautifulSoup对象self.soup。查看[BeautifulSoup的文档](http://beautifulsoup.readthedocs.io/zh_CN/latest/)了解如何操作这个BeautifulSoup对象以解析html源码。你可以查看high.py了解如何继承这个基类。
-
+需要注意的是，如果这个网页上包含了不止一条最新信息——比如这个网页有很多栏目，每个栏目都在实时更新信息，那么你的抓取函数可以返回一个list，这个list中的元素均为类似于示例代码中返回的dict。事实上，为了返回多条信息，我建议你分别将解析不同栏目的代码封装成类的成员函数。update.py中提供了一个基类CrawlBase，你构造的对象可以继承这个基类。基类构造函数有两个参数url和encoding，encoding默认为utf-8。调用构造函数后完成了http请求并构造了一个BeautifulSoup对象self.soup。查看[BeautifulSoup的文档](http://beautifulsoup.readthedocs.io/zh_CN/latest/)了解如何操作这个BeautifulSoup对象以解析html源码。你可以查看high.py了解如何继承这个基类。
 对了，请务必在Python3.4及以上版本下进行开发。
 如果你对Python3下进行爬虫有任何疑问，不妨先参考《Python网络数据采集》这本书，下载链接: [Python网络数据采集](http://storage.hc1024.me/Python_Web_Ebook.zip) 压缩文件已经加密，密码为站长名字全拼。
 
