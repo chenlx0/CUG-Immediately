@@ -4,6 +4,8 @@ import os
 import MySQLdb
 import datetime
 import configparser
+import requests
+from bs4 import BeautifulSoup
 from time import sleep
 
 
@@ -16,6 +18,17 @@ def get_mysql_info():
     config.read("../spider.conf")
     mysql_info = dict(config["mysqld"])
     return mysql_info
+
+
+class CrawlBase(object):
+    """
+    Base object for Crawling object
+    """
+    def __init__(self, url, encoding="utf-8"):
+        self.url = url
+        source = requests.get(url)
+        source.encoding = encoding
+        self.soup = BeautifulSoup(source.text, "html.parser")
 
 
 class SpiderNet(object):

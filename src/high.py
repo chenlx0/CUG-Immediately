@@ -1,16 +1,12 @@
 from update import SpiderNet
-from bs4 import BeautifulSoup
-import requests
+from update import CrawlBase
 
 app = SpiderNet()
 
 
-class XuegongInfo(object):
+class XuegongInfo(CrawlBase):
     def __init__(self):
-        self.url = "http://www.xuegong.cug.edu.cn"
-        source = requests.get(self.url)
-        source.encoding = "utf-8"
-        self.soup = BeautifulSoup(source.text, "html.parser")
+        CrawlBase.__init__(self, url="http://www.xuegong.cug.edu.cn")
 
     def news(self):
         info_list = self.soup.find_all("a", {"style": "width:86%;", "target": "_blank"})
