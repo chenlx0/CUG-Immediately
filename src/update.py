@@ -108,7 +108,7 @@ class SpiderNet(object):
             print("* Calling function: %s" % execute_fun.__name__)
             try:
                 info = execute_fun()
-                if isinstance(info, list):
+                if isinstance(info, list) or isinstance(info, tuple):
                     for i in info:
                         if self.refresh_confirm(i):
                             self.insert_data(i)
