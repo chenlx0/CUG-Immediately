@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import MySQLdb
+import pymysql
 import datetime
 import configparser
 import requests
@@ -36,9 +36,9 @@ class SpiderNet(object):
         sql_dict = get_mysql_info()
 
         # These two class are used for connecting mysql server
-        self.db = MySQLdb.connect(host=sql_dict["host"], user=sql_dict["user"], port=int(sql_dict["port"]),
-                                  password=sql_dict["password"], db=sql_dict["dbname"])
-        self.db.set_character_set('utf8')
+        self.db = pymysql.connect(host=sql_dict["host"], user=sql_dict["user"], port=int(sql_dict["port"]),
+                                  password=sql_dict["password"], db=sql_dict["dbname"], charset="utf8")
+        # self.db.set_character_set('utf8')
         self.cursor = self.db.cursor()
         # self.cursor.execute('SET NAMES utf8;')
         # self.cursor.execute('SET CHARACTER SET utf8;')
