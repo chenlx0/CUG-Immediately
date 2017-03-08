@@ -6,7 +6,7 @@ app = SpiderNet()
 
 class XuegongInfo(CrawlBase):
     def __init__(self):
-        CrawlBase.__init__(self, url="http://www.xuegong.cug.edu.cn")
+        CrawlBase.__init__(self, url="http://www.xuegong.cug.edu.cn/")
 
     def news(self):
         info_list = self.soup.find_all("a", {"style": "width:86%;", "target": "_blank"})
@@ -14,7 +14,7 @@ class XuegongInfo(CrawlBase):
         return {
             "title": inner["title"],
             "link": inner["href"],
-            "unit": "中国地质大学学工处",
+            "unit": "学工处",
             "site_url": self.url,
             "abstract": None,
             "category": "学工要闻"
@@ -26,7 +26,7 @@ class XuegongInfo(CrawlBase):
         temp_dict = {
             "title": "",
             "link": "",
-            "unit": "中国地质大学学工处",
+            "unit": "学工处",
             "site_url": self.url,
             "abstract": None,
             "category": "通知"
@@ -43,11 +43,77 @@ class XuegongInfo(CrawlBase):
         parse_list.append(self.news())
         return parse_list
 
+@app.update()
+def cug_xuegong_information():
+    spider = XuegongInfo()
+    return spider.get_info()
+
+
+class JwcInfo(CrawlBase):
+    def __init__(self):
+        CrawlBase.__init__(self, url="http://jwc.cug.edu.cn/")
+
+    def get_info(self):
+        info = self.soup.find("td", {"class": "NewsListTitle"})
+        return {
+            "title": info.a.contents[0],
+            "link": self.url + info.a["href"],
+            "unit": "教务处",
+            "site_url": self.url,
+            "abstract": None,
+            "category": "通知\新闻"
+        }
 
 @app.update()
-def cug_xuegong_infomation():
-    X = XuegongInfo()
-    return X.get_info()
+def cug_jwc_information():
+    spider = JwcInfo()
+    return spider.get_info()
+
+
+class StuUnionInfo(CrawlBase):
+    def __init__(self):
+        CrawlBase.__init__(self, url="http://su.mycug.net/")
+
+    def get_left_list(self):
+        info = self.soup.find("span", {"class": "tlist"})
+        return {
+            "title": info.a["title"],
+            "link": info.a["href"],
+            "unit": "学生会",
+            "site_url": self.url,
+            "abstract": None,
+            "category": "通知\新闻"
+        }
+
+    def get_middle_list(self):
+        info_list = self.soup.find_all("span", {"class": "tlist-m"})
+        first = {
+            "title": info_list[0].a["title"],
+            "link": info_list[0].a["href"],
+            "unit": "学生会",
+            "site_url": self.url,
+            "abstract": None,
+            "category": "校园动态"
+        }
+        second = {
+            "title": info_list[8].a["title"],
+            "link": info_list[8].a["href"],
+            "unit": "学生会",
+            "site_url": self.url,
+            "abstract": None,
+            "category": "校会动态"
+        }
+        return first, second
+
+    def get_all_info_dict(self):
+        first, second = self.get_middle_list()
+        return first, second, self.get_left_list()
+
+@app.update()
+def get_stu_union_information():
+    spider = StuUnionInfo()
+    return spider.get_all_info_dict()
+
 
 if __name__ == "__main__":
-    app.run(60)
+    app.run(50)
