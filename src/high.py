@@ -115,5 +115,35 @@ def get_stu_union_information():
     return spider.get_all_info_dict()
 
 
+class GraduateSchoolInfo(CrawlBase):
+    def __init__(self):
+        CrawlBase.__init__(self, url="http://graduate.cug.edu.cn/", encoding="gb2312")
+
+    def get_all_info(self):
+        info_list = self.soup.find_all("div", {"class": "yy_title"})
+        first = {
+            "title": info_list[0].a["title"],
+            "link": self.url + info_list[0].a["href"],
+            "unit": "研究生院",
+            "site_url": self.url,
+            "abstract": None,
+            "category": "通知公告"
+        }
+        second = {
+            "title": info_list[8].a["title"],
+            "link": self.url + info_list[8].a["href"],
+            "unit": "研究生院",
+            "site_url": self.url,
+            "abstract": None,
+            "category": "工作动态"
+        }
+        return first, second
+
+@app.update()
+def graduate_school_information():
+    spider = GraduateSchoolInfo()
+    return spider.get_all_info()
+
+
 if __name__ == "__main__":
-    app.run(50)
+    app.run(300)
