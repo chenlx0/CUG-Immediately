@@ -1,5 +1,7 @@
 from update import SpiderNet
 from update import CrawlBase
+import requests
+from bs4 import BeautifulSoup
 
 app = SpiderNet()
 
@@ -143,6 +145,23 @@ class GraduateSchoolInfo(CrawlBase):
 def graduate_school_information():
     spider = GraduateSchoolInfo()
     return spider.get_all_info()
+
+
+@app.update()
+def home_page_news():
+    url = "http://www.cug.edu.cn/new/News_new8.aspx"
+    source = requests.get(url)
+    source.encoding = "utf-8"
+    soup = BeautifulSoup(source.text, "html.parser")
+    info = soup.find("td", {"width": "90%", "height": "22"})
+    return {
+        "title": info.a.contents[0],
+        "link": url + info.a["href"],
+        "unit": "地大主页",
+        "site_url": url,
+        "abstract": None,
+        "category": "新闻"
+    }
 
 
 if __name__ == "__main__":
