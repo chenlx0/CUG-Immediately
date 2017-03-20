@@ -156,7 +156,7 @@ def home_page_news():
     info = soup.find("td", {"width": "90%", "height": "22"})
     return {
         "title": info.a.contents[0],
-        "link": url + info.a["href"],
+        "link": info.a["href"],
         "unit": "地大主页",
         "site_url": url,
         "abstract": None,
