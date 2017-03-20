@@ -26,9 +26,9 @@ class CrawlBase(object):
     """
     def __init__(self, url, encoding="utf-8"):
         self.url = url
-        source = requests.get(url)
-        source.encoding = encoding
-        self.soup = BeautifulSoup(source.text, "html.parser")
+        self.source = requests.get(url)
+        self.source.encoding = encoding
+        self.soup = BeautifulSoup(self.source.text, "html.parser")
 
 
 class SpiderNet(object):
@@ -46,6 +46,9 @@ class SpiderNet(object):
         # Store function objects in a list
         # And count the number of function objects
         self.function_list = []
+
+        # Store buffer in a dictionary
+        self.buffer = {}
 
     def insert_data(self, info_dict):
         """
